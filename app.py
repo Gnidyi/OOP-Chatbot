@@ -5,15 +5,14 @@ class ChatBot:
         self.input_handler = InputHandler()
         self.intent_processor = IntentProcessor()
         self.response_generator = ResponseGenerator()
-        self.knowledge_base = self.load_knowledge_base()  # Load knowledge from a file
+        self.knowledge_base = self.load_knowledge_base()
 
     def handle_message(self, message):
-        # Process the user message
         sanitized_message = self.input_handler.sanitize_input(message)
         intents = self.intent_processor.detect_intents(sanitized_message)
 
         if not intents:
-            response = self.learn_new_question(sanitized_message)  # Learning process for unknown intents
+            response = self.learn_new_question(sanitized_message)
         else:
             response = self.response_generator.generate_responses(intents)
 
@@ -23,10 +22,8 @@ class ChatBot:
         print(f"ChatBot: I don't know how to respond to that. Can you teach me the correct response?")
         correct_response = input("You (teaching): ")
 
-        # Ask for a keyword that should trigger this response
         keyword = input("What keyword should trigger this response? ").strip().lower()
 
-        # Save the new question, response, and keyword in the knowledge base
         self.knowledge_base[keyword] = correct_response
         self.save_knowledge_base()
         return f"Got it! I'll remember that. The keyword '{keyword}' will trigger the response."
@@ -35,7 +32,7 @@ class ChatBot:
         try:
             with open("knowledge_base.json", "r") as file:
                 if file.read().strip() == "":
-                    return {}  # Return an empty dictionary if the file is empty
+                    return {}
                 file.seek(0)
                 return json.load(file)
         except (FileNotFoundError, json.JSONDecodeError):
@@ -54,14 +51,12 @@ class InputHandler:
 class IntentProcessor:
     def detect_intents(self, message):
         intents = []
-        # Predefined intents
         if "hello" in message:
             intents.append("greeting")
         if "help" in message:
             intents.append("help")
-        # Learned intents (case-insensitive matching)
         for keyword in chatbot.knowledge_base:
-            if keyword in message:  # Both are already lowercase
+            if keyword in message:
                 intents.append(keyword)
         return intents
 
@@ -80,14 +75,10 @@ class ResponseGenerator:
             elif intent in chatbot.knowledge_base:
                 generated_responses.append(chatbot.knowledge_base[intent])
 
-        # Join multiple responses into separate sentences
         return " ".join(generated_responses)
 
-
-# Initialize the ChatBot
 chatbot = ChatBot()
 
-# Console Chat Loop with Learning Capability
 def start_console_chat():
     print("Welcome to the Learning ChatBot! Type 'exit' to end the chat.")
     while True:
