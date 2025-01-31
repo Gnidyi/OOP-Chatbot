@@ -9,3 +9,5 @@ Die Hauptfunction - handle_messages();
 Drucken von Support-Tickets mit Chat-Verlauf – noch etwa buggy.
 
 Das Design wird höchstwahrscheinlich geringfügige Änderungen erfahren
+
+![Uploading image.png…]()
