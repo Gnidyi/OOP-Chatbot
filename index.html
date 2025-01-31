@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGLAND Supportchatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #messages {
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #e3e3e3;
+        }
+        .user-message {
+            background-color: #d1f7c4;
+            text-align: right;
+        }
+        .bot-message {
+            background-color: #f1f1f1;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <h1>BUGLAND Supportchatbot</h1>
+        <div id="messages"></div>
+        <input type="text" id="user-input" placeholder="Gib deine Nachricht ein..." />
+        <button onclick="sendMessage()">Senden</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.0/socket.io.min.js"></script>
+    <script>
+        const socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Initial message
+        socket.emit('start_chat');
+
+        // Handle messages from the bot
+        socket.on('bot_response', function(data) {
+            const message = data.response;
+            console.log("Bot response: ", message);
+            displayMessage(message, 'bot');
+        });
+
+        // Handle customer type input
+        socket.on('customer_type', function() {
+            const customerType = prompt("Bist du ein Privatkunde oder ein Geschäftskunde?");
+            socket.emit('customer_type', { type: customerType });
+        });
+
+        // Handle business choice input
+        socket.on('ask_business_chat', function(data) {
+            const businessChoice = prompt("Möchtest du dennoch den Chatbot verwenden? (Ja/Nein/Exit)");
+            socket.emit('business_choice', { choice: businessChoice });
+        });
+
+        // Handle chat termination
+        socket.on('disconnect', function() {
+            displayMessage("Chat beendet. Vielen Dank für die Nutzung unseres Chats!", 'bot');
+        });
+
+        function displayMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.textContent = message;
+            document.getElementById('messages').appendChild(messageDiv);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+        }
+
+        function sendMessage() {
+            const userMessage = document.getElementById('user-input').value.trim();
+            if (userMessage === "") return;
+
+            // Display user message
+            displayMessage(userMessage, 'user');
+            document.getElementById('user-input').value = '';
+
+            // Send user message to the backend
+            socket.emit('message', { message: userMessage });
+        }
+    </script>
+</body>
+</html>
